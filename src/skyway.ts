@@ -1,4 +1,4 @@
-import { LocalAudioStream, LocalP2PRoomMember, LocalSFURoomMember, LocalStream, LocalVideoStream, nowInSec, RemoteStream, Room, RoomPublication, RoomType, roomTypes, SkyWayAuthToken, SkyWayContext, SkyWayRoom, SkyWayStreamFactory, uuidV4 } from '@skyway-sdk/room';
+import { LocalAudioStream, LocalP2PRoomMember, LocalSFURoomMember, LocalStream, LocalVideoStream, nowInSec, RoomPublication, RoomType, roomTypes, SkyWayAuthToken, SkyWayContext, SkyWayRoom, SkyWayStreamFactory, uuidV4 } from '@skyway-sdk/room';
 const env = import.meta.env
 
 // skyway token

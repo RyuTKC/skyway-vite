@@ -1,6 +1,6 @@
 // import { SkyWayStreamFactory } from '@skyway-sdk/room';
 import "./main.css"
-import { getElements, onClickJoin, tokenCreator } from './skyway';
+import { getElements, tokenCreator } from './skyway';
 
 const initialize = async () => {
   const token = tokenCreator()
