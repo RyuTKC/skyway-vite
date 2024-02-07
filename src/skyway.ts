@@ -64,8 +64,8 @@ const getElements = async (token: string) => {
     selectMics.add(newOption)
   })
   const customLocalStream = {
-    video: await SkyWayStreamFactory.createCameraVideoStream({deviceId: selectCameras.value}),
-    audio: await SkyWayStreamFactory.createMicrophoneAudioStream({deviceId: selectMics.value})
+    video: await SkyWayStreamFactory.createCameraVideoStream({ deviceId: selectCameras.value }),
+    audio: await SkyWayStreamFactory.createMicrophoneAudioStream({ deviceId: selectMics.value })
   }
 
 
@@ -79,7 +79,7 @@ const getElements = async (token: string) => {
   // const localStream = await SkyWayStreamFactory.createMicrophoneAudioAndCameraStream();
 
   joinButton.onclick = async () => await onClickJoin(roomNameInput, token, myId, roomType, customLocalStream, remoteMediaArea, buttonArea, selectCommType.value as RoomType,
-                                                      )
+  )
   const localVideo = document.getElementById('local-video') as HTMLVideoElement;
   customLocalStream.video.attach(localVideo);
   await localVideo.play();
@@ -170,6 +170,34 @@ const onClickJoin = async (roomNameInput: HTMLInputElement, token: string,
   // publish
   await me.publish(audio);
   await me.publish(video);
+
+  const localResourcesArea = document.getElementById("local-resources")
+  if (localResourcesArea instanceof HTMLDivElement) {
+    const muteButton = document.createElement("button")
+    localResourcesArea.appendChild(muteButton)
+    const micIcon = document.createElement("span")
+    micIcon.className = "material-symbols-outlined"
+    micIcon.textContent = "mic"
+    muteButton.appendChild(micIcon)
+    muteButton.onclick = async () => {
+      const audios = me.publications.filter(v => v.contentType === 'audio')
+      await audios.forEach(async v => {
+        console.log(v.state)
+        switch (v.state) {
+          case 'enabled':
+            await v.disable()
+            micIcon.textContent = "mic_off"
+            break;
+          case 'disabled':
+          default:
+            await v.enable()
+            micIcon.textContent = "mic"
+            break;
+        }
+      })
+    }
+  }
+
 
   // add subscribe components every publication
   room.publications.forEach(v => subscribeAndAttach(me, v, remoteMediaArea, buttonArea));
