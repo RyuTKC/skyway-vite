@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+button,
+select {
+  @apply rounded-sm border-[1px] px-[0.5rem]
+}

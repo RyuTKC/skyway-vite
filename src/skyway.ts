@@ -1,4 +1,4 @@
-import { LocalAudioStream, LocalP2PRoomMember, LocalStream, LocalVideoStream, nowInSec, Room, RoomPublication, SkyWayAuthToken, SkyWayContext, SkyWayRoom, uuidV4 } from '@skyway-sdk/room';
+import { LocalAudioStream, LocalP2PRoomMember, LocalSFURoomMember, LocalStream, LocalVideoStream, nowInSec, RemoteStream, Room, RoomPublication, RoomType, roomTypes, SkyWayAuthToken, SkyWayContext, SkyWayRoom, SkyWayStreamFactory, uuidV4 } from '@skyway-sdk/room';
 const env = import.meta.env
 
 // skyway token
@@ -45,17 +45,54 @@ const tokenCreator = () => new SkyWayAuthToken({
   },
 }).encode(env.VITE_SECRET_KEY);
 
-const getElements = () => {
-  // get element
-  const buttonArea = document.getElementById('button-area');
-  const remoteMediaArea = document.getElementById('remote-media-area');
-  const roomNameInput = document.getElementById('room-name');
-  const myId = document.getElementById('my-id');
-  const joinButton = document.getElementById('join');
-  // local video stream
-  const localVideo = document.getElementById('local-video');
+const getElements = async (token: string) => {
 
-  return { buttonArea, remoteMediaArea, roomNameInput, myId, joinButton, localVideo }
+  const cameras = await SkyWayStreamFactory.enumerateInputVideoDevices();
+  const selectCameras = document.getElementById('select-cameras') as HTMLSelectElement
+  cameras.forEach(v => {
+    const newOption = document.createElement("option")
+    newOption.value = v.id
+    newOption.text = v.label
+    selectCameras.add(newOption)
+  })
+  const mics = await SkyWayStreamFactory.enumerateInputAudioDevices();
+  const selectMics = document.getElementById('select-mics') as HTMLSelectElement
+  mics.forEach(v => {
+    const newOption = document.createElement("option")
+    newOption.value = v.id
+    newOption.text = v.label
+    selectMics.add(newOption)
+  })
+  const customLocalStream = {
+    video: await SkyWayStreamFactory.createCameraVideoStream({deviceId: selectCameras.value}),
+    audio: await SkyWayStreamFactory.createMicrophoneAudioStream({deviceId: selectMics.value})
+  }
+
+
+  const buttonArea = document.getElementById('button-area') as HTMLDivElement;
+  const remoteMediaArea = document.getElementById('remote-media-area') as HTMLDivElement;
+  const roomNameInput = document.getElementById('room-name') as HTMLInputElement;
+  const myId = document.getElementById('my-id') as HTMLSpanElement;
+  const roomType = document.getElementById('room-type') as HTMLSpanElement;
+
+  const joinButton = document.getElementById('join') as HTMLButtonElement;
+  // const localStream = await SkyWayStreamFactory.createMicrophoneAudioAndCameraStream();
+
+  joinButton.onclick = async () => await onClickJoin(roomNameInput, token, myId, roomType, customLocalStream, remoteMediaArea, buttonArea, selectCommType.value as RoomType,
+                                                      )
+  const localVideo = document.getElementById('local-video') as HTMLVideoElement;
+  customLocalStream.video.attach(localVideo);
+  await localVideo.play();
+
+  const selectCommType = document.getElementById('select-communication-type') as HTMLSelectElement
+  roomTypes.forEach(v => {
+    const newOption = document.createElement("option");
+    newOption.value = v
+    newOption.text = v
+    selectCommType.add(newOption)
+  })
+
+  return { buttonArea, remoteMediaArea, roomNameInput, myId, joinButton, localVideo, select: selectCommType }
 }
 
 // subuscribe function
@@ -64,62 +101,72 @@ const subscribeAndAttach = (me: LocalP2PRoomMember, publication: RoomPublication
   if (publication.publisher.id === me.id) return;
 
   // add subscribe target
+  const buttonGroupAreaId = `${publication.publisher.id}-button-group`
+  let getButtonGroupArea = document.getElementById(buttonGroupAreaId)
+  const buttonGroupArea = getButtonGroupArea === null ? document.createElement("div") : getButtonGroupArea as HTMLDivElement
+  buttonGroupArea.className = "flex flex-col"
+  buttonGroupArea.id = buttonGroupAreaId;
+
+  const remoteMediaGroupAreaId = `${publication.publisher.id}-media-group`
+  let getRemoteMediaGroupArea = document.getElementById(remoteMediaGroupAreaId);
+  const remoteMediaGroupArea = getRemoteMediaGroupArea === null ? document.createElement("div") : getRemoteMediaGroupArea as HTMLDivElement
+  remoteMediaGroupArea.className = "flex flex-col"
+  remoteMediaGroupArea.id = remoteMediaGroupAreaId
+
+  remoteMediaArea.appendChild(remoteMediaGroupArea);
+  buttonArea.appendChild(buttonGroupArea)
+
   const subscribeButton = document.createElement('button');
   subscribeButton.textContent = `${publication.publisher.id}: ${publication.contentType}`;
-  buttonArea.appendChild(subscribeButton);
-
+  buttonGroupArea.appendChild(subscribeButton);
   // onclick event
-  subscribeButton.onclick = async () => {
-
-    const { stream } = await me.subscribe(publication.id);
-
-    // add others media
-    let newMedia;
-    switch (stream.contentType) {
-      case 'video':
-        newMedia = document.createElement('video');
-        newMedia.playsInline = true;
-        newMedia.autoplay = true;
-        break;
-      case 'audio':
-        newMedia = document.createElement('audio');
-        newMedia.controls = true;
-        newMedia.autoplay = true;
-        break;
-      default:
-        return;
-    }
-    stream.attach(newMedia);
-    remoteMediaArea.appendChild(newMedia);
-  };
+  subscribeButton.onclick = async () => onClickSubscribe(me, publication, remoteMediaGroupArea)
 };
 
-const eventHandlers = (room: Room) => {
+const onClickSubscribe = async (me: LocalP2PRoomMember | LocalSFURoomMember, publication: RoomPublication, remoteMediaGroupArea: HTMLElement) => {
 
-  room.onStreamPublished.add((e) => {
-    e.publication
-  })
-  room.onClosed
-}
+  const { stream } = await me.subscribe(publication.id);
 
-const onClickJoin = async (roomNameInput: HTMLInputElement, token: string, myId: HTMLElement,
+  // add others media
+  let newMedia;
+  switch (stream.contentType) {
+    case 'video':
+      newMedia = document.createElement('video');
+      newMedia.playsInline = true;
+      newMedia.autoplay = true;
+      break;
+    case 'audio':
+      newMedia = document.createElement('audio');
+      newMedia.controls = true;
+      newMedia.autoplay = true;
+      break;
+    default:
+      return;
+  }
+
+
+  stream.attach(newMedia);
+  remoteMediaGroupArea.appendChild(newMedia);
+};
+
+const onClickJoin = async (roomNameInput: HTMLInputElement, token: string,
+  myId: HTMLSpanElement, roomType: HTMLSpanElement,
   localStream: { video: LocalVideoStream, audio: LocalAudioStream },
-  remoteMediaArea: HTMLDivElement, buttonArea: HTMLDivElement) => {
+  remoteMediaArea: HTMLDivElement, buttonArea: HTMLDivElement, select: RoomType) => {
   if (roomNameInput.value === '') return;
 
   const { video, audio } = localStream
-
   // create context
   const context = await SkyWayContext.Create(token);
   // create or find a room
   const room = await SkyWayRoom.FindOrCreate(context, {
-    type: 'p2p',
+    type: select,
     name: roomNameInput.value,
   });
-
   // me id
   const me = await room.join();
   myId.textContent = me.id;
+  roomType.textContent = room.type;
   // publish
   await me.publish(audio);
   await me.publish(video);
@@ -134,4 +181,4 @@ const onClickJoin = async (roomNameInput: HTMLInputElement, token: string, myId:
 }
 
 
-export { tokenCreator, getElements, subscribeAndAttach, eventHandlers, onClickJoin }
+export { tokenCreator, getElements, subscribeAndAttach, onClickJoin }

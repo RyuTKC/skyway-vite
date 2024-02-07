@@ -4,16 +4,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <title>SkyWay Tutorial</title>
+    <link href="./src/main.css" rel="stylesheet" />
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
   </head>
-  <body>
-    <p>ID: <span id="my-id"></span></p>
-    <div>
-      room name: <input id="room-name" type="text" />
-      <button id="join">join</button>
+  <body class="m-1 flex flex-col items-center">
+    <div class="m-1 flex flex-col">
+      <div class="relative left-0">
+        <p>ID: <span id="my-id"></span></p>
+        <p>Room Type: <span id="room-type"></span></p>
+      </div>
+      <div>
+        <span>comm type: </span><select id="select-communication-type"></select>
+      </div>
+      <div class="inline-grid grid-cols-12 grid-rows-2">
+        <span class="col-span-2">camera: </span><select class="col-span-10" name="" id="select-cameras"></select>
+        <span class="col-span-2">mic:</span> <select class="col-span-10" name="" id="select-mics"></select>
+      </div>
+      <div>
+        room name: <input id="room-name" type="text" class="border-[1px] rounded-sm border-gray-500" />
+        <button id="join" class="rounded-sm ">join</button>
+      </div>
     </div>
     <video id="local-video" width="400px" muted playsinline></video>
-    <div id="button-area"></div>
-    <div id="remote-media-area"></div>
+    <div id="button-area" class="flex flex-row"></div>
+    <div id="remote-media-area" class="flex flex-row"></div>
     <script type="module" src="./src/client-main.ts"></script>
   </body>
 </html>
