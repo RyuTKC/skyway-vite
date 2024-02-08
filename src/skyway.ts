@@ -1,6 +1,22 @@
 import { LocalAudioStream, LocalP2PRoomMember, LocalSFURoomMember, LocalStream, LocalVideoStream, nowInSec, RoomPublication, RoomType, roomTypes, SkyWayAuthToken, SkyWayContext, SkyWayRoom, SkyWayStreamFactory, uuidV4 } from '@skyway-sdk/room';
 const env = import.meta.env
 
+const useState = <T,>(initialState: T): [() => T, (nextState: ((prev: T) => T) | T) => void] => {
+  let nowState: T = initialState
+  const state = () => nowState
+  const test = (prev: T) => (nextState: ((prev: T) => T) | T) => {
+    if (nextState instanceof Function)
+      nowState = nextState(prev)
+    else
+      nowState = nextState
+
+  };
+
+  const setState = test(nowState)
+
+  return [state, setState];
+}
+
 // skyway token
 const tokenCreator = () => new SkyWayAuthToken({
   jti: uuidV4(),
@@ -68,7 +84,6 @@ const getElements = async (token: string) => {
     audio: await SkyWayStreamFactory.createMicrophoneAudioStream({ deviceId: selectMics.value })
   }
 
-
   const buttonArea = document.getElementById('button-area') as HTMLDivElement;
   const remoteMediaArea = document.getElementById('remote-media-area') as HTMLDivElement;
   const roomNameInput = document.getElementById('room-name') as HTMLInputElement;
@@ -118,6 +133,7 @@ const subscribeAndAttach = (me: LocalP2PRoomMember, publication: RoomPublication
 
   const subscribeButton = document.createElement('button');
   subscribeButton.textContent = `${publication.publisher.id}: ${publication.contentType}`;
+  subscribeButton.className=`${publication.id}`
   buttonGroupArea.appendChild(subscribeButton);
   // onclick event
   subscribeButton.onclick = async () => onClickSubscribe(me, publication, remoteMediaGroupArea)
@@ -146,6 +162,7 @@ const onClickSubscribe = async (me: LocalP2PRoomMember | LocalSFURoomMember, pub
 
 
   stream.attach(newMedia);
+  newMedia.className=`${publication.id}`
   remoteMediaGroupArea.appendChild(newMedia);
 };
 
@@ -171,8 +188,11 @@ const onClickJoin = async (roomNameInput: HTMLInputElement, token: string,
   await me.publish(audio);
   await me.publish(video);
 
+  //mute and display sharing
   const localResourcesArea = document.getElementById("local-resources")
   if (localResourcesArea instanceof HTMLDivElement) {
+
+    // mute
     const muteButton = document.createElement("button")
     localResourcesArea.appendChild(muteButton)
     const micIcon = document.createElement("span")
@@ -196,6 +216,43 @@ const onClickJoin = async (roomNameInput: HTMLInputElement, token: string,
         }
       })
     }
+
+    // display sharing
+    const sharingButton = document.createElement("button")
+    localResourcesArea.appendChild(sharingButton)
+    const castIcon = document.createElement("span")
+    castIcon.className = "material-symbols-outlined"
+    castIcon.textContent = "cast"
+    sharingButton.appendChild(castIcon)
+
+    const [share, setShare] = useState<{ stream: LocalVideoStream, publishId: string } | undefined>(undefined)
+    castIcon.onclick = async () => {
+      const startShare = async () => {
+        const shareStream = await SkyWayStreamFactory.createDisplayStreams()
+        const sharePub = await me.publish(shareStream.video)
+
+        shareStream.video.track.onended = async () => await me.unpublish(sharePub.id)
+        setShare({ stream: shareStream.video, publishId: sharePub.id })
+        sharingButton.className="bg-sky-200"
+
+      }
+      const stopShare = async (sharePub?: RoomPublication<LocalStream>) =>{
+        share()?.stream.release()
+        sharePub && await me.unpublish(sharePub)
+        setShare(undefined)
+        sharingButton.className=""
+      }
+
+      if (!share()) {
+        await startShare()
+      } else {
+        const sharePub = me.publications.find(v => v.id === share()?.publishId)
+
+        sharePub && (async () => {
+          await stopShare(sharePub)
+        })()
+      }
+    }
   }
 
 
@@ -206,6 +263,11 @@ const onClickJoin = async (roomNameInput: HTMLInputElement, token: string,
     // subscribe
     subscribeAndAttach(me, e.publication, remoteMediaArea, buttonArea);
   });
+
+  room.onStreamUnpublished.add((e)=>{
+    const elements = document.getElementsByClassName(e.publication.id)
+    Array.from(elements).forEach(v=> v.remove())
+  })
 }
 
 
