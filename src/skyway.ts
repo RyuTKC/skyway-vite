@@ -133,7 +133,7 @@ const subscribeAndAttach = (me: LocalP2PRoomMember, publication: RoomPublication
 
   const subscribeButton = document.createElement('button');
   subscribeButton.textContent = `${publication.publisher.id}: ${publication.contentType}`;
-  subscribeButton.className=`${publication.id}`
+  subscribeButton.className = `${publication.id}`
   buttonGroupArea.appendChild(subscribeButton);
   // onclick event
   subscribeButton.onclick = async () => onClickSubscribe(me, publication, remoteMediaGroupArea)
@@ -162,7 +162,7 @@ const onClickSubscribe = async (me: LocalP2PRoomMember | LocalSFURoomMember, pub
 
 
   stream.attach(newMedia);
-  newMedia.className=`${publication.id}`
+  newMedia.className = `${publication.id}`
   remoteMediaGroupArea.appendChild(newMedia);
 };
 
@@ -186,7 +186,12 @@ const onClickJoin = async (roomNameInput: HTMLInputElement, token: string,
   roomType.textContent = room.type;
   // publish
   await me.publish(audio);
-  await me.publish(video);
+  await me.publish(video, {
+    encodings: [
+      { scaleResolutionDownBy: 1, id: 'high', maxBitrate: 400_000, maxFramerate: 30 },
+      { scaleResolutionDownBy: 4, id: 'low', maxBitrate: 80_000, maxFramerate: 5 },
+    ]
+  });
 
   //mute and display sharing
   const localResourcesArea = document.getElementById("local-resources")
@@ -218,29 +223,29 @@ const onClickJoin = async (roomNameInput: HTMLInputElement, token: string,
     }
 
     // display sharing
-    const sharingButton = document.createElement("button")
-    localResourcesArea.appendChild(sharingButton)
+    const castButton = document.createElement("button")
+    localResourcesArea.appendChild(castButton)
     const castIcon = document.createElement("span")
     castIcon.className = "material-symbols-outlined"
     castIcon.textContent = "cast"
-    sharingButton.appendChild(castIcon)
+    castButton.appendChild(castIcon)
 
     const [share, setShare] = useState<{ stream: LocalVideoStream, publishId: string } | undefined>(undefined)
-    castIcon.onclick = async () => {
+    castButton.onclick = async () => {
       const startShare = async () => {
         const shareStream = await SkyWayStreamFactory.createDisplayStreams()
         const sharePub = await me.publish(shareStream.video)
 
-        shareStream.video.track.onended = async () => await me.unpublish(sharePub.id)
+        shareStream.video.track.onended = async () => await stopShare(sharePub)
         setShare({ stream: shareStream.video, publishId: sharePub.id })
-        sharingButton.className="bg-sky-200"
+        castButton.className = "bg-sky-200"
 
       }
-      const stopShare = async (sharePub?: RoomPublication<LocalStream>) =>{
+      const stopShare = async (sharePub?: RoomPublication<LocalStream>) => {
         share()?.stream.release()
         sharePub && await me.unpublish(sharePub)
         setShare(undefined)
-        sharingButton.className=""
+        castButton.className = ""
       }
 
       if (!share()) {
@@ -264,9 +269,9 @@ const onClickJoin = async (roomNameInput: HTMLInputElement, token: string,
     subscribeAndAttach(me, e.publication, remoteMediaArea, buttonArea);
   });
 
-  room.onStreamUnpublished.add((e)=>{
+  room.onStreamUnpublished.add((e) => {
     const elements = document.getElementsByClassName(e.publication.id)
-    Array.from(elements).forEach(v=> v.remove())
+    Array.from(elements).forEach(v => v.remove())
   })
 }
 
