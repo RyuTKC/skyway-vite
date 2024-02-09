@@ -16,6 +16,8 @@
     "vite": "^5.0.8"
   },
   "dependencies": {
-    "@skyway-sdk/room": "^1.7.0"
+    "@skyway-sdk/core": "^1.7.0",
+    "@skyway-sdk/room": "^1.7.0",
+    "@skyway-sdk/sfu-bot": "^1.7.0"
   }
 }

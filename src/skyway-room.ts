@@ -61,7 +61,7 @@ const tokenCreator = () => new SkyWayAuthToken({
   },
 }).encode(env.VITE_SECRET_KEY);
 
-const getElements = async (token: string) => {
+const createChat = async (token: string) => {
 
   const cameras = await SkyWayStreamFactory.enumerateInputVideoDevices();
   const selectCameras = document.getElementById('select-cameras') as HTMLSelectElement
@@ -111,7 +111,7 @@ const getElements = async (token: string) => {
 }
 
 // subuscribe function
-const subscribeAndAttach = (me: LocalP2PRoomMember, publication: RoomPublication<LocalStream>, remoteMediaArea: HTMLDivElement, buttonArea: HTMLDivElement) => {
+const subscribeAndAttach = (me: LocalP2PRoomMember | LocalSFURoomMember, publication: RoomPublication<LocalStream>, remoteMediaArea: HTMLDivElement, buttonArea: HTMLDivElement) => {
   // exclude me
   if (publication.publisher.id === me.id) return;
 
@@ -276,4 +276,4 @@ const onClickJoin = async (roomNameInput: HTMLInputElement, token: string,
 }
 
 
-export { tokenCreator, getElements, subscribeAndAttach, onClickJoin }
+export { tokenCreator, createChat, subscribeAndAttach, onClickJoin }

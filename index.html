@@ -28,12 +28,12 @@
       room name: <input id="room-name" type="text" class="border-[1px] rounded-sm border-gray-500" />
       <button id="join" class="rounded-sm ">join</button>
     </div>
+    <div id="local-resources">
+      <video id="local-video" width="400px" muted playsinline></video>
+    </div>
+    <div id="button-area" class="flex flex-row"></div>
+    <div id="remote-media-area" class="flex flex-row"></div>
   </div>
-  <div id="local-resources">
-    <video id="local-video" width="400px" muted playsinline></video>
-  </div>
-  <div id="button-area" class="flex flex-row"></div>
-  <div id="remote-media-area" class="flex flex-row"></div>
   <script type="module" src="./src/client-main.ts"></script>
 </body>
 

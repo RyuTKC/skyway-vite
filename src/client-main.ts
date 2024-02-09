@@ -1,17 +1,18 @@
 // import { SkyWayStreamFactory } from '@skyway-sdk/room';
 import "./main.css"
-import { getElements, tokenCreator } from './skyway';
+// import { createChat, tokenCreator } from './skyway-room';
+import { createChat as createChatCore, tokenCreator as tokenCreatorCore } from "./skyway-core";
 
-const initialize = async () => {
-  const token = tokenCreator()
-  await getElements(token)
+// const initializeRoom = async () => {
+//   const token = tokenCreator()
+//   await createChat(token)
 
-  // local play
-  // const localStream = await SkyWayStreamFactory.createMicrophoneAudioAndCameraStream();
-  // localStream.video.attach(localVideo);
-  // await localVideo.play();
-  // join button function
-};
+// };
+
+const initializeCore = async()=>{
+  const token = tokenCreatorCore()
+  await createChatCore(token)
+}
 
 
-(initialize())
+(initializeCore())
