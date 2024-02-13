@@ -1,7 +1,8 @@
+import { LocalVideoStream, Publication } from "@skyway-sdk/core";
 import { VirtualBackground } from "skyway-video-processors";
 
 
-export const attachVBButton = (localResourcesArea: HTMLDivElement, localVideo: HTMLVideoElement) =>{
+export const attachVBButton = (localResourcesArea: HTMLDivElement, localVideo: HTMLVideoElement, videoPub: Publication<LocalVideoStream>) =>{
   const input = document.createElement("input")
   input.id = "attachVB"
   input.type = "file"
@@ -25,7 +26,7 @@ export const attachVBButton = (localResourcesArea: HTMLDivElement, localVideo: H
     console.log(await fileArray[0].arrayBuffer())
 
     const reader = new FileReader()
-    reader.onload = (e)=> typeof e.target?.result === 'string' && attachVB(localVideo, e.target.result)
+    reader.onload = (e)=> typeof e.target?.result === 'string' && attachVB(localVideo, e.target.result, videoPub)
 
     reader.readAsDataURL(fileArray[0])
   }
@@ -33,7 +34,7 @@ export const attachVBButton = (localResourcesArea: HTMLDivElement, localVideo: H
   return label
 }
 
-const attachVB = async (videoElement: HTMLVideoElement, imageUrl: string) => {
+const attachVB = async (videoElement: HTMLVideoElement, imageUrl: string, videoPub: Publication<LocalVideoStream>) => {
   const backgroundProcessor = new VirtualBackground({ image: imageUrl })
 
   await backgroundProcessor.initialize()
@@ -45,6 +46,8 @@ const attachVB = async (videoElement: HTMLVideoElement, imageUrl: string) => {
 
   const stream = new MediaStream([result.track])
   videoElement.srcObject = stream
+
+  videoPub.replaceStream(new LocalVideoStream(result.track))
 
   await videoElement.play()
 }

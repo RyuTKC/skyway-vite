@@ -237,6 +237,7 @@ const onClickJoin = async (roomNameInput: HTMLInputElement,
     ]
   });
 
+  
   sfuBot && await sfuForward(sfuBot, audioPub, videoPub)
 
   //mute and display sharing
@@ -306,7 +307,7 @@ const onClickJoin = async (roomNameInput: HTMLInputElement,
     }
 
     // virtual background
-    attachVBButton(localResourcesArea, localVideo)
+    attachVBButton(localResourcesArea, localVideo, videoPub)
   }
 
   // add subscribe components every publication
