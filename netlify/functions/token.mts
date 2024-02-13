@@ -11,7 +11,7 @@ export default async (req: Request, context: Context) => {
   
   const channelName = context.params.channelName;
   // const memberName = context.params.memberName;
-
+  console.log("token create!")
   const iat = Math.floor(Date.now() / 1000);
   const exp = Math.floor(Date.now() / 1000) + 36000;
   const token = jwt.sign({
