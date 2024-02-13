@@ -2,6 +2,7 @@ import type { Context } from "@netlify/functions"
 import { nowInSec, uuidV4 } from "@skyway-sdk/core";
 import type { AuthToken, } from "@skyway-sdk/token"
 import jwt from "jsonwebtoken"
+import crypto from "crypto-js"
 
 export default async (req: Request, context: Context) => {
   // const env = import.meta.env
