@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "netlify": "netlify dev"
+    "netlify": "netlify dev",
+    "netlifybuild": "netlify build"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
