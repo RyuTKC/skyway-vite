@@ -7,9 +7,7 @@ import {randomUUID} from "crypto"
 export default async (req: Request, context: Context) => {
   // const env = import.meta.env
   const id = process.env.VITE_APP_ID
-  console.log(id)
   const secret = process.env.VITE_SECRET_KEY
-  console.log("1dafdasf;as")
   
   const channelName = context.params.channelName;
   // const memberName = context.params.memberName;
