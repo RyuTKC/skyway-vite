@@ -101,7 +101,7 @@ const createChat = async () => {
 
   const joinButton = document.getElementById('join') as HTMLButtonElement;
   // const localStream = await SkyWayStreamFactory.createMicrophoneAudioAndCameraStream();
-  joinButton.onclick = async () => await onClickJoin(roomNameInput,  myId, roomType, customLocalStream, remoteMediaArea, buttonArea, selectCommType.value as RoomType,
+  joinButton.onclick = async () => await onClickJoin(roomNameInput, myId, roomType, customLocalStream, remoteMediaArea, buttonArea, selectCommType.value as RoomType,
   )
   const localVideo = document.getElementById('local-video') as HTMLVideoElement;
   customLocalStream.video.attach(localVideo);
@@ -324,7 +324,7 @@ const sfuForward = async (bot: SfuBotMember, ...publications: Publication<LocalA
 }
 
 
-const getToken = async (channelName: string, memberName?: string) => {
+const getToken = async (channelName: string) => {
   return await fetch(`/.netlify/functions/token?channelName=${channelName}`)
     .then(async res => await res.text())
     .catch(e => { throw e })
