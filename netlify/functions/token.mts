@@ -2,7 +2,7 @@ import type { Context } from "@netlify/functions"
 import { nowInSec, uuidV4 } from "@skyway-sdk/core";
 import type { AuthToken, } from "@skyway-sdk/token"
 import jwt from "jsonwebtoken"
-import crypto from "crypto"
+import {randomUUID} from "crypto"
 
 export default async (req: Request, context: Context) => {
   // const env = import.meta.env
@@ -16,7 +16,7 @@ export default async (req: Request, context: Context) => {
   const iat = Math.floor(Date.now() / 1000);
   const exp = Math.floor(Date.now() / 1000) + 36000;
   const token = jwt.sign({
-    jti: crypto.randomUUID(),
+    jti: randomUUID(),
     iat: iat,
     exp: exp,
     scope: {
