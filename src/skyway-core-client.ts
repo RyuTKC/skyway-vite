@@ -1,6 +1,7 @@
 // import { LocalP2PRoomMember, LocalSFURoomMember, RoomPublication, RoomType, roomTypes, SkyWayRoom } from '@skyway-sdk/room';
 import { LocalAudioStream, LocalStream, LocalVideoStream, nowInSec, SkyWayAuthToken, SkyWayContext, SkyWayStreamFactory, uuidV4, SkyWayChannel, Channel, LocalPerson, Publication } from '@skyway-sdk/core'
 import { SfuBotMember, SfuBotPlugin } from '@skyway-sdk/sfu-bot'
+import { attachVBButton } from './virtualBackground'
 
 const env = import.meta.env
 
@@ -101,7 +102,7 @@ const createChat = async () => {
 
   const joinButton = document.getElementById('join') as HTMLButtonElement;
   // const localStream = await SkyWayStreamFactory.createMicrophoneAudioAndCameraStream();
-  joinButton.onclick = async () => await onClickJoin(roomNameInput, myId, roomType, customLocalStream, remoteMediaArea, buttonArea, selectCommType.value as RoomType,
+  joinButton.onclick = async () => await onClickJoin(roomNameInput, myId, roomType, customLocalStream, remoteMediaArea, buttonArea, selectCommType.value as RoomType, localVideo
   )
   const localVideo = document.getElementById('local-video') as HTMLVideoElement;
   customLocalStream.video.attach(localVideo);
@@ -200,10 +201,11 @@ const FindOrCreate = async (context: SkyWayContext, info: { name: string, type: 
 const onClickJoin = async (roomNameInput: HTMLInputElement,
   myId: HTMLSpanElement, roomType: HTMLSpanElement,
   localStream: { video: LocalVideoStream, audio: LocalAudioStream },
-  remoteMediaArea: HTMLDivElement, buttonArea: HTMLDivElement, select: RoomType) => {
+  remoteMediaArea: HTMLDivElement, buttonArea: HTMLDivElement, select: RoomType, localVideo: HTMLVideoElement) => {
   if (roomNameInput.value === '') return;
 
 
+  // fetch token
   const token = await getToken(roomNameInput.value)
 
 
@@ -251,7 +253,6 @@ const onClickJoin = async (roomNameInput: HTMLInputElement,
     muteButton.onclick = async () => {
       const audios = me.publications.filter(v => v.contentType === 'audio')
       await audios.forEach(async v => {
-        console.log(v.state)
         switch (v.state) {
           case 'enabled':
             await v.disable()
@@ -303,6 +304,9 @@ const onClickJoin = async (roomNameInput: HTMLInputElement,
         })()
       }
     }
+
+    // virtual background
+    attachVBButton(localResourcesArea, localVideo)
   }
 
   // add subscribe components every publication
