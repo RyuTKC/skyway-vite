@@ -23,6 +23,7 @@ export default async (req: Request, context: Context) => {
         id: id,
         turn: true,
         actions: ["read"],
+        analytics: true,
         channels: [
           {
             id: "*",

@@ -1,5 +1,5 @@
 // import { LocalP2PRoomMember, LocalSFURoomMember, RoomPublication, RoomType, roomTypes, SkyWayRoom } from '@skyway-sdk/room';
-import { LocalAudioStream, LocalStream, LocalVideoStream, nowInSec, SkyWayAuthToken, SkyWayContext, SkyWayStreamFactory, uuidV4, SkyWayChannel, Channel, LocalPerson, Publication } from '@skyway-sdk/core'
+import { LocalAudioStream, LocalStream, LocalVideoStream, nowInSec, SkyWayAuthToken, SkyWayContext, SkyWayStreamFactory, uuidV4, SkyWayChannel, Channel, LocalPerson, Publication, Logger } from '@skyway-sdk/core'
 import { SfuBotMember, SfuBotPlugin } from '@skyway-sdk/sfu-bot'
 import { attachVBButton } from './virtualBackground'
 
@@ -211,7 +211,15 @@ const onClickJoin = async (roomNameInput: HTMLInputElement,
 
   const { video, audio } = localStream
   // create context
-  const context = await SkyWayContext.Create(token);
+  const context = await SkyWayContext.Create(token, { log: { level: 'info' || 'warn' || 'error', format: 'string' } });
+
+
+  Logger.onLog = ({ level, timestamp, message, id }) => {
+    console.log("level:", level, "\n",
+      "timestamp:", timestamp, "\n",
+      "message:", message.join(), "\n",
+      "id: ", id)
+  }
 
   //add sfuBot plugin
   const sfuPlugin = new SfuBotPlugin()
@@ -237,7 +245,7 @@ const onClickJoin = async (roomNameInput: HTMLInputElement,
     ]
   });
 
-  
+
   sfuBot && await sfuForward(sfuBot, audioPub, videoPub)
 
   //mute and display sharing
@@ -330,9 +338,16 @@ const sfuForward = async (bot: SfuBotMember, ...publications: Publication<LocalA
 
 
 const getToken = async (channelName: string) => {
-  return await fetch(`/.netlify/functions/token?channelName=${channelName}`)
-    .then(async res => await res.text())
-    .catch(e => { throw e })
+  return await fetch(`/.netlify/functions/token?channelName=${channelName}`, { headers: { "Content-Type": "text/plain;charset=UTF-8" } })
+    .then(async res => {
+      const rawTokenText = await res.text()
+      console.log(rawTokenText)
+      return rawTokenText
+    })
+    .catch(e => {
+      console.log(e)
+      return ""
+    })
 }
 
 export { tokenCreator, createChat, subscribeAndAttach, onClickJoin }
