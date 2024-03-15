@@ -1,5 +1,5 @@
 // import { LocalP2PRoomMember, LocalSFURoomMember, RoomPublication, RoomType, roomTypes, SkyWayRoom } from '@skyway-sdk/room';
-import { LocalAudioStream, LocalStream, LocalVideoStream, nowInSec, SkyWayAuthToken, SkyWayContext, SkyWayStreamFactory, uuidV4, SkyWayChannel, Channel, LocalPerson, Publication, Logger } from '@skyway-sdk/core'
+import { LocalAudioStream, LocalStream, LocalVideoStream, nowInSec, SkyWayAuthToken, SkyWayContext, SkyWayStreamFactory, uuidV4, SkyWayChannel, Channel, LocalPerson, Publication } from '@skyway-sdk/core'
 import { SfuBotMember, SfuBotPlugin } from '@skyway-sdk/sfu-bot'
 
 const env = import.meta.env
