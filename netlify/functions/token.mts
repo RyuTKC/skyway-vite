@@ -106,5 +106,5 @@ export default async (req: Request, context: Context) => {
   //   },
   // }
 
-  return new Response(token)
+  return Response.json({token: token})
 }

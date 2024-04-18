@@ -211,7 +211,7 @@ const onClickJoin = async (roomNameInput: HTMLInputElement,
 
   const { video, audio } = localStream
   // create context
-  const context = await SkyWayContext.Create(token, { log: { level: 'info' || 'warn' || 'error', format: 'string' } });
+  const context = await SkyWayContext.Create(token.token, { log: { level: 'info' || 'warn' || 'error', format: 'string' } });
 
 
   Logger.onLog = ({ level, timestamp, message, id }) => {
@@ -340,14 +340,11 @@ const sfuForward = async (bot: SfuBotMember, ...publications: Publication<LocalA
 const getToken = async (channelName: string) => {
   return await fetch(`/.netlify/functions/token?channelName=${channelName}`, { headers: { "Content-Type": "text/plain;charset=UTF-8" } })
     .then(async res => {
-      const rawTokenText = await res.text()
-      console.log(rawTokenText)
-      return rawTokenText
+      const token = await res.json() as {token: string}
+      console.log(token)
+      return token
     })
-    .catch(e => {
-      console.log(e)
-      return ""
-    })
+    .catch(e => { throw e})
 }
 
 export { tokenCreator, createChat, subscribeAndAttach, onClickJoin }
